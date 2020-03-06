@@ -1,0 +1,39 @@
+% Chapter 2
+
+\chapter{技术框架}
+
+\section{概述}
+
+文件数字签名管理器是讲是一个B/S架构的Web应用程序，主要分为前端网页和后端业务逻辑两部分组成。
+本文将采用Spring Boot\cite{springboot}作为主体开发框架完成设计以及实现。
+前端方面的HTML网页主要使用W3 CSS\cite{w3css}样式表进行修饰，
+动态页面由Thymeleaf\cite{thymeleaf}模板引擎动态生成。
+密码学相关部分会调用Java Cryptograph Extension\cite{jce}库中的相关代码。
+发送电子邮件的相关模块会调用JavaMail\cite{javamail}库中的相关函数。
+Gradle将负责完成项目的构建、依赖关系的管理。
+
+
+\section{Spring Boot简介}
+
+Spring Boot是一款用于开发Web应用程序的基础框架，其中集成了大量实用的模组，能够极大地简化开发流程，提高代码重用度，减少时间的消耗并提升效率，近年来广受业界的好评。
+
+\begin{itemize}
+	\item \textbf{Spring无处不在}
+	
+	Spring灵活的代码库被全球各地的开发者们信任。Spring每天给数以百万计的终端用户提供了愉快的体验——无论是在线流视频，线上购物还是无数的其他创新性的解决方案。并且所有技术领域鼎鼎有名的大企业们都为Spring的发展做出了贡献，其中包括阿里巴巴，亚马逊，谷歌，微软，等等。
+	
+	\item \textbf{Spring具有灵活性}
+	
+	Spring具有灵活的、全面的扩展库和第三方库，从而让开发者们可以构建几乎任何能够想象到应用程序。Spring框架的核心具有控制反转（Inversion of Control）和依赖注入（Dependency Injection）的特性，并作为根基为更广泛的特性和功能提供了可能性。
+	
+	\item \textbf{Spring具有安全性}
+	
+	在处理安全方面的问题的时候，Spring一贯以来保持着快速、负责的态度。Spring的贡献者们会与安全领域的专业人员合作，及时的测试、发布针对于安全隐患的补丁。同时第三方的依赖也被密切的关注着，日常更新会帮助开发者的数据和应用程序尽可能的安全。同时Spring Security模块让开发者可以轻松地把工业标准的安全方案集成于应用程序中，并默认提供值得信任的安全产品。
+	
+\end{itemize}
+
+\section{W3 CSS简介}
+
+W3 CSS是一款层叠样式表框架，并在其中内置了响应能力。它默认支持可响应的移动设计，并且显著比类似的CSS框架梗小更轻量。W3 CSS学习曲线平滑，易于使用，因而还可以极大程度的加快、简化web应用程序的开发过程。
+
+\section{Thymeleaf简介}
