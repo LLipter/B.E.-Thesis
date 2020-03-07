@@ -1,0 +1,41 @@
+% Chapter x
+
+\chapter{安全性设计}
+
+\section{注册表单校验规则}\label{sec:registerV}
+
+\begin{itemize}
+	\item \textbf{用户名校验规则}
+	
+	为保证用户名的强度，我们要求一个合法的用户名必须不少于6个字符，并不多于18个字符。每一个字符都必须是ASCII字母，ASCII数字，或者下划线“\_”。
+	
+	\item \textbf{密码校验规则}
+	
+	密码的强度对于一个系统的安全来说至关重要，弱密码如“123456”、“root”、“qwert”都极易被攻击者猜中。因此为保证用户的密码强度，我们要求一个合法的密码必须必须不少于6个字符，并不多于18个字符。每一个字符都必须是可打印出来的ASCII字符。并且整个密码必须同时包含大写字母、小写字母、数字和特殊符号（例如百分号、下划线等）。
+	
+	\item \textbf{电子邮箱地址校验规则}
+	
+	我们认为电子邮箱地址应当是一个合法的互联网地址，因此利用了JavaMail中的InternetAddress类来校验它。代码示例如下。
+	
+	\begin{minted}
+	[
+	frame=lines,
+	framesep=2mm,
+	baselinestretch=1.2,
+	bgcolor=lightgray,
+	fontsize=\footnotesize,
+	linenos
+	]
+	{java}
+public static boolean isValidEmail(String email) {
+        try {
+                InternetAddress emailAddr = new InternetAddress(email);
+                emailAddr.validate();
+                return true;
+        } catch (AddressException ex) {
+                return false;
+        }
+}
+	\end{minted}
+	
+\end{itemize}

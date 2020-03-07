@@ -136,7 +136,7 @@
 \RequirePackage[amsmath,thmmarks]{ntheorem} % 定理
 \RequirePackage{graphicx, subcaption}
 \RequirePackage{listings}  % 代码段
-%\RequirePackage{minted}   % 代码高亮，请先用python安装pygments库
+\RequirePackage{minted}   % 代码高亮，请先用python安装pygments库
 \RequirePackage{algorithm2e, algorithmic} % 算法代码
 \RequirePackage{tikz, pgfplots} % 绘图
 \RequirePackage{fontspec, color, url, array}
