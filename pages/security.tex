@@ -19,14 +19,14 @@
 	
 	\begin{minted}
 	[
-	frame=lines,
-	framesep=2mm,
-	baselinestretch=1.2,
-	bgcolor=lightgray,
-	fontsize=\footnotesize,
-	linenos
-	]
-	{java}
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=lightgray,
+		fontsize=\footnotesize,
+		linenos
+	]{java}
+	
 public static boolean isValidEmail(String email) {
         try {
                 InternetAddress emailAddr = new InternetAddress(email);
@@ -36,6 +36,11 @@ public static boolean isValidEmail(String email) {
                 return false;
         }
 }
+
 	\end{minted}
+	
+	\item \textbf{重复密码校验}
+	
+	为确保用户输入了其设想中的密码，避免由于键盘误操作带来的错误。我们要求用户输入两次索要设置的密码，只有两次密码完全相同的时候才被认为密码正确，通过校验。
 	
 \end{itemize}
