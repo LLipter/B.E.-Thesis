@@ -2,6 +2,10 @@
 
 \chapter{安全性设计}
 
+\section{前端页面的生成规则}
+
+所有返回给用户的前端页面都经由Thymeleaf模板引擎渲染而成，我们遵照规范，正确的使用了Thymeleaf模板，因此从源头杜绝了所有可能的XSS攻击，包括Stored XSS和Reflected XSS漏洞都不会出现在我们的网站中。
+
 \section{注册表单校验规则}\label{sec:registerV}
 
 \begin{itemize}
@@ -26,7 +30,7 @@
 		fontsize=\footnotesize,
 		linenos
 	]{java}
-	
+
 public static boolean isValidEmail(String email) {
         try {
                 InternetAddress emailAddr = new InternetAddress(email);
@@ -39,8 +43,57 @@ public static boolean isValidEmail(String email) {
 
 	\end{minted}
 	
-	\item \textbf{重复密码校验}
+	\item \textbf{重复密码校验规则}
 	
 	为确保用户输入了其设想中的密码，避免由于键盘误操作带来的错误。我们要求用户输入两次索要设置的密码，只有两次密码完全相同的时候才被认为密码正确，通过校验。
 	
 \end{itemize}
+
+\section{电子邮箱的验证规则}\label{sec:emailV}
+
+用户在刚刚注册完，或者是刚刚更换电子邮箱地址之后。这个新的电子邮箱地址会处于“未验证”的状态。我们估计用户通过我们的系统验证这个电子邮箱地址。当用户在登录后点击个人主页中的“VERIFY YOUR EMAIL ADDRESS”链接后，一封电子邮件会被发送到用户指定的邮箱中，其中会包含一个链接，点击该链接就可以完成对电子邮箱的验证。
+
+\section{文件上传的验证规则}\label{sec:fileV}
+
+文件的上传在网络生活中及其常见，应用广泛。但往往不严谨的实现会留下安全隐患，给恶意攻击者留下攻击服务器的空间。我们在这里进行了多次验证，主要防范了以下的潜在攻击方式
+\begin{itemize}
+
+	\item \textbf{耗尽服务器资源的攻击}
+	
+	为了防止服务器的磁盘资源被恶意攻击者用很多大文件抢占一空，我们限制了单个上传的文件大小上限，现阶段我们只允许上传小于10MB的文件。
+	
+	\item \textbf{恶意文件名攻击}
+	
+	恶意攻击者有可能会上传形如“../../file.txt”的文件，使得该文件有可能会存储在服务器指定的存储根目录外，造成未知的、及其难以排查的错误。因此我们会仔细检查文件名，拒绝所有包含路径分隔符的非法文件名。
+	
+	\item \textbf{恶意程序注入}
+	
+	恶意攻击者有可能会上传包含恶意程序的代码片段，并试图通过别的手段让这段代码在服务器端运行，从而制造后门或或获取更大的服务器权限。因此我们采取文件拓展名白名单的形式限制了可以上传的文件类型。只有形如以下拓展名的文件才能被成功上传：
+	\begin{itemize}
+		\item \textbf{文档类}
+		
+		docx，doc，pptx，ppt，xlsx，xls，pdf
+		
+		\item \textbf{图片类}
+		
+		jpeg，jpg，png，gif，tiff，tif，raw，bmp，svg
+		
+		\item \textbf{纯文本类}
+		
+		txt，tex，md
+		
+		\item \textbf{音频类}
+		
+		mp3，wav
+		
+		\item \textbf{压缩类}
+		
+		zip，z，rar，7z，gz，tar
+		
+		\item \textbf{数据类型}
+		
+		csv，xml
+	\end{itemize}
+
+\end{itemize}
+
