@@ -4,7 +4,25 @@
 
 \section{前端页面的生成规则}
 
-所有返回给用户的前端页面都经由Thymeleaf模板引擎渲染而成，我们遵照规范，正确的使用了Thymeleaf模板，因此从源头杜绝了所有可能的XSS攻击，包括Stored XSS和Reflected XSS漏洞都不会出现在我们的网站中。
+所有返回给用户的前端页面都经由Thymeleaf模板引擎渲染而成，我们遵照规范，正确的使用了Thymeleaf模板，因此从源头杜绝了所有可能的XSS攻击，包括Stored XSS和Reflected XSS漏洞都不会出现在我们的网站中。下面是一个典型的Thymeleaf模板示例。
+
+\begin{minted}
+[
+	frame=lines,
+	framesep=2mm,
+	baselinestretch=1.2,
+	bgcolor=lightgray,
+	fontsize=\footnotesize,
+	linenos
+]{html}
+
+<div class="w3-card-4 w3-padding-16 w3-white w3-container" th:if="${has_error}">
+     <div class="w3-center">
+            <b style="color:red" th:text="${error_msg}"></b>
+     </div>
+</div>
+
+\end{minted}
 
 \section{注册表单校验规则}\label{sec:registerV}
 
@@ -21,15 +39,15 @@
 	
 	我们认为电子邮箱地址应当是一个合法的互联网地址，因此利用了JavaMail中的InternetAddress类来校验它。代码示例如下。
 	
-	\begin{minted}
-	[
-		frame=lines,
-		framesep=2mm,
-		baselinestretch=1.2,
-		bgcolor=lightgray,
-		fontsize=\footnotesize,
-		linenos
-	]{java}
+\begin{minted}
+[
+	frame=lines,
+	framesep=2mm,
+	baselinestretch=1.2,
+	bgcolor=lightgray,
+	fontsize=\footnotesize,
+	linenos
+]{java}
 
 public static boolean isValidEmail(String email) {
         try {
@@ -41,7 +59,7 @@ public static boolean isValidEmail(String email) {
         }
 }
 
-	\end{minted}
+\end{minted}
 	
 	\item \textbf{重复密码校验规则}
 	
@@ -96,4 +114,8 @@ public static boolean isValidEmail(String email) {
 	\end{itemize}
 
 \end{itemize}
+
+\section{Session安全分析}\label{sec:sessionS}
+
+我们为用户生成的的Cookie是长达16字节的随机数。16个字节总共会包含128个比特，即一共会有$2^{128}$种可能的排列组合。这个取值空间是如此之大，基本上可以近似于认为我们的Session是永远不会重复的，没有重用的风险。同时Session会有有效时间的限制，如果用户在30分钟内没有进行任何操作的话，用户的Session将会过期，需要重新登录。
 
