@@ -95,15 +95,84 @@ Controller作为一个MVC框架的组成部分在网站的整体响应过程中�
 
 \begin{table}[ht]
 \centering
-\begin{tabular}{>{\bfseries}lp{8cm}}
+\begin{tabular}{>{\bfseries}lp{9cm}}
 \toprule
 SessionController & 
 一个抽象类，包含了一些用于验证、管理Session的方法，其他所有需要处理Session的Controller都将继承该类。\\
 \midrule
 EmailController & 
 继承自SessionController，负责处理与电子邮件相关的请求。\\
+\midrule
+IndexController & 
+继承自SessionController，负责处理与欢迎界面相关的请求。\\
+\midrule
+LoginController &
+继承自SessionController，负责处理与登录相关的请求。\\
+\midrule
+LogoutController &
+继承自SessionController，负责处理与登出相关的请求。\\
+\midrule
+MessageController &
+继承自SessionController，负责处理与信息界面相关的请求。\\
+\midrule
+FileController &
+继承自SessionController，负责处理与文件相关的请求，包括上传文件、下载文件、删除文件等。\\
+\midrule
+KeyController &
+继承自SessionController，负责处理与密钥相关的请求。\\
+\midrule
+PasswordController &
+继承自SessionController，负责处理与密码的请求，包括更改密码，忘记密码、重置密码等。\\
+\midrule
+MainController &
+继承自SessionController，负责处理与主页面相关的请求。\\
+\midrule
+RegisterController &
+继承自SessionController，负责处理与注册页面相关的请求。\\
+\midrule
+SigdictErrorController &
+负责处理与错误页面相关的请求。\\
 \bottomrule
 \end{tabular}
 \caption{Controller类}
 \label{tab:controller}
 \end{table}
+
+我们以处理访问主界面请求的MainController为例，Spring Boot框架使用（如下所示代码第1行的）@RequestMapping装饰器将用户的请求映射到某个具体的响应方法中。通过调整响应的参数，我们可以指定映射URL的样式（/main.html），同时可以指定映射的方法类型（GET、POST、DELETE等）。
+
+通常而言，我们在处理请求时需要做的第一件事是验证用户的状态，如下图代码第5行所示。validateSession()方法从抽象类SessionController中继承而来，它会从用户的请求附带的cookies中提取出session（如存在），然后与我们数据库中的数据进行对比，从而确认用户的身份、以及其所处的状态。
+
+如下图代码第6-11行所示，如果validateSession()返回的用户为空，则代表用户并没有登录，处于非法状态，在这个时候我们会把请求重定向到登录界面，要求用户输入用户名、密码登录，并附带上响应的错误提示信息。
+
+如下图代码第12-14行所示，如果用户登录状态正确，我们会交给Thymeleaf渲染出正确的主界面并返回会给用户，同时用户的部分个人信息也会显示出来。
+
+\begin{minted}
+[
+	frame=lines,
+	framesep=2mm,
+	baselinestretch=1.2,
+	bgcolor=lightgray,
+	fontsize=\footnotesize,
+	linenos
+]{java}
+
+@RequestMapping(value = "/main.html", method = RequestMethod.GET)
+public String getMainPage(Model model,
+                                        HttpServletRequest request,
+                                        RedirectAttributes redirectAttributes) {
+        User user = validateSession(request);
+        if (user == null) { // haven't signed in
+                PassMessage.addRedirectAttributesErrorMessage(
+                        redirectAttributes, 
+                        ErrorMessage.SIGH_IN_FIRST);
+                return "redirect:/login.html";
+        }
+        PassMessage.addUserMessage(model, user);
+        PassMessage.addModelMainPageFiles(model, user);
+        return "main";
+}
+
+\end{minted}
+	
+
+
