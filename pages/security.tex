@@ -2,7 +2,7 @@
 
 \chapter{安全性设计}
 
-\section{前端页面的生成规则}
+\section{生成安全的前端页面}
 
 所有返回给用户的前端页面都经由Thymeleaf模板引擎渲染而成，我们遵照规范，正确的使用了Thymeleaf模板，因此从源头杜绝了所有可能的XSS攻击，包括Stored XSS和Reflected XSS漏洞都不会出现在我们的网站中。下面是一个典型的Thymeleaf模板示例。
 
@@ -24,7 +24,11 @@
 
 \end{minted}
 
-\section{注册表单校验规则}\label{sec:registerV}
+\section{校验用户输入}
+
+任何由用户提交给服务器端的信息都有可能成为恶意攻击者的突破口，忽视或不完善的校验检查往往会让恶意攻击者有机可乘。
+
+\subsection{注册表单校验规则}\label{sec:registerV}
 
 \begin{itemize}
 	\item \textbf{用户名校验规则}
@@ -67,11 +71,11 @@ public static boolean isValidEmail(String email) {
 	
 \end{itemize}
 
-\section{电子邮箱的验证规则}\label{sec:emailV}
+\subsection{电子邮箱的验证规则}\label{sec:emailV}
 
 用户在刚刚注册完，或者是刚刚更换电子邮箱地址之后。这个新的电子邮箱地址会处于“未验证”的状态。我们估计用户通过我们的系统验证这个电子邮箱地址。当用户在登录后点击个人主页中的“VERIFY YOUR EMAIL ADDRESS”链接后，一封电子邮件会被发送到用户指定的邮箱中，其中会包含一个链接，点击该链接就可以完成对电子邮箱的验证。
 
-\section{文件上传的验证规则}\label{sec:fileV}
+\subsection{文件上传的验证规则}\label{sec:fileV}
 
 文件的上传在网络生活中及其常见，应用广泛。但往往不严谨的实现会留下安全隐患，给恶意攻击者留下攻击服务器的空间。我们在这里进行了多次验证，主要防范了以下的潜在攻击方式
 \begin{itemize}
@@ -118,4 +122,17 @@ public static boolean isValidEmail(String email) {
 \section{Session安全分析}\label{sec:sessionS}
 
 我们为用户生成的的Cookie是长达16字节的随机数。16个字节总共会包含128个比特，即一共会有$2^{128}$种可能的排列组合。这个取值空间是如此之大，基本上可以近似于认为我们的Session是永远不会重复的，没有重用的风险。同时Session会有有效时间的限制，如果用户在30分钟内没有进行任何操作的话，用户的Session将会过期，需要重新登录。
+
+\section{处理错误和异常}
+
+由于未被catch的exception，或者其他种种难以预料到的情形，服务器常常会产生错误的响应。这类错误信息如果未经处理是及其危险的，因为往往默认的做法是打印stack trace（如图\ref{fig:stacktrace}）。这样的暴露是及其危险的，其中很有可能会泄露部分代码细节，从而让恶意攻击者找到下一步攻击服务器的突破口，进而带来更大的恶劣影响。在本项目中，我们统一编写了一个用于在异常情况下响应的控制器，该控制器会返回我们自己设计的统一风格的错误界面，在保证整体网站风格统一的前提下，隐藏了所有可能会暴露代码细节的信息。
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=0.8\textwidth]
+	{figures/stacktrace.jpg}\\
+	\caption{可能会暴露代码细节信息的stack trace}
+	\label{fig:stacktrace}
+\end{figure}
+
 
