@@ -23,6 +23,34 @@
 	\item \textbf{Package controller}
 	
 	包含了所有Controller类，详见小节\ref{sec:controllerP}。
+	
+	\item \textbf{Package exception}
+	
+	包含了所有我们自己定义的Exception类型。
+	
+	\item \textbf{Package listener}
+	
+	定义了一个用于在Spring Boot框架基本完成启动时触发的监听器。这个监听器将负责为项目进行一些初始化工作，例如生成主密钥（详见小节\ref{sec:keyS}）。
+	
+	\item \textbf{Package test}
+	
+	包含了一些对于部分代码简单的单元测试。
+	
+	\item \textbf{Package entity}
+	
+	作为MVC模型中的Model，与Package repository一起在Hibernate的帮助下完成了用操作对象的方式进行数据库操作。
+	
+	\item \textbf{Package repository}
+	
+	包含了所有的repository类，与Package entity一起在Hibernate的帮助下完成了用操作对象的方式进行数据库操作。
+	
+	\item \textbf{Package security}
+	
+	包含了所有安全相关的函数。
+	
+	\item \textbf{Package utility}
+	
+	包含了所有辅助类的类、方法。
 
 \end{itemize}
 
@@ -173,6 +201,97 @@ public String getMainPage(Model model,
 }
 
 \end{minted}
-	
 
+\section{数据库设计}
+
+数据库是可持久化存储数据的重要一环，为项目的稳定性提供了重要的保障。图\ref{fig:db}是我们设计的后端数据库存储方案。我们总共设计了包括USER，UPLOADED\_FILE等在内的6个表格，它们之间通过一定的外键约束在一起。
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=0.8\textwidth]
+	{figures/db.png}\\
+	\caption{数据库表关系图}
+	\label{fig:db}
+\end{figure}
+
+\begin{itemize}
+	\item \textbf{USER}
+	
+	USER表格使我们存储系统中最为核心的一张数据表。在其中存储了包含用户ID，用户名，邮箱，哈希过后的密码（见小节\ref{sec:hashpassword}）以及多个密钥等关键信息。
+	
+	\item \textbf{UPLOADED\_FILE}
+	
+	UPLOADED\_FILE表格存储着用户所上传文件的相关信息。其中包括文件ID，是否加密，文件名，上传时间，签名类型，数字签名，文件标识符（见小节\ref{sec:fileV}）等信息。
+	
+	\item \textbf{USER\_UPLOADED\_FILE}
+	
+	USER\_UPLOADED\_FILE表格作为桥梁，记录着用户与文件之间的对应关系，这是潜在的多对多数据关系，所以我们单独用拆开用一个表格记录该数据。USER\_UPLOADED\_FILE表格通过两个外键约束与USER表格和UPLOADED\_FILE表格联系在一起。
+	
+	\item \textbf{SESSION}
+	
+	SESSION表格用于记录维持用户登录状态所需要的相关信息，包括Session ID，用户ID和有效期限等。
+	
+	\item \textbf{RESET\_PASSWORD\_TOKEN}
+	
+	RESET\_PASSWORD\_TOKEN表格主要记录向用户发送重置密码链接所需要的相关信息，包含Token ID，用户ID和有效期限等。
+	
+	\item \textbf{VERIFICATION\_TOKEN}
+	
+	VERIFICATION\_TOKEN表格主要记录向用户发送验证邮箱链接所需要的相关信息，包含Token ID，用户ID和有效期限等。
+	
+\end{itemize}
+
+值得注意的是SESSION表，RESET\_PASSWORD\_TOKEN表和VERIFICATION\_TOKEN表其实，与USER表格实际上是一对一关系的，即一个用户只能拥有一个Session，一个用户只能拥有一个重置密码链接，一个用户只能拥有一个验证邮箱链接。
+
+也就是说这三张表格其实完全可以合并入USER表格中，但我们没有这样做。原因是我们希望能尽可能的优化数据库存储空间的利用率。因为在同一时刻必定只有总体用户中的一小部分才会真的拥有上述三种信息，而如果将它们合并进入USER表格中，势必会产生大量的无效数据（以NULL或其他特殊数值表示的非法标记）。这将会白白占用大量的数据库存储空间。
+
+下面以Session为例，简要展示一下如何通过Hibernate以操作对象的方式进行数据库读写。下图所示代码是entity/Session.java中的部分代码示例。
+
+可以看到，在第1行，我们用@Entity装饰器让Hibernate接管这个类。随后在第4-7行定义了一些需要的成员变量，这些成员变量也将被Hibernate映射到底层数据库表格中的一列。第三行@Id装饰器表明uid是主键。同时第8-11行我们使用了@OneToOne和@MapsId装饰器将Session与User通过外键的形式连接、映射在了一起。
+
+\begin{minted}
+[
+	frame=lines,
+	framesep=2mm,
+	baselinestretch=1.2,
+	bgcolor=lightgray,
+	fontsize=\footnotesize,
+	linenos
+]{java}
+
+@Entity // This tells Hibernate to make a table out of this class
+public class Session {
+        @Id
+        private Integer uid;
+        private String sessionId;
+        @Basic
+        private Timestamp validThrough;
+        @OneToOne
+        @MapsId // @MapsId tells Hibernate to use the id column of 
+        // this entity as both primary key and foreign key.
+        private User user;
+        // other methods are omitted, including getters and setters
+}
+
+\end{minted}
+
+下面所示代码是repository/SessionRepository.java中的部分片段。
+
+在Controller中，我们将通过操作SessionRepository来获取某个具体的Session对象，这里我们定义了findBySessionId方法，使得我们可以通过sessionID查找相应的Session对象。而Controller中的repository对象则用@Autowired装饰器修饰，Spring Boot框架将会在运行时自动绑定一个repository添加进去。
+
+\begin{minted}
+[
+	frame=lines,
+	framesep=2mm,
+	baselinestretch=1.2,
+	bgcolor=lightgray,
+	fontsize=\footnotesize,
+	linenos
+]{java}
+
+public interface SessionRepository extends CrudRepository<Session, Integer> {
+        Session findBySessionId(String sessionId);
+}
+
+\end{minted}
 

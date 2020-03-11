@@ -86,7 +86,7 @@ public static boolean isValidEmail(String email) {
 	
 	\item \textbf{恶意文件名攻击}
 	
-	恶意攻击者有可能会上传形如“../../file.txt”的文件，使得该文件有可能会存储在服务器指定的存储根目录外，造成未知的、及其难以排查的错误。因此我们会仔细检查文件名，拒绝所有包含路径分隔符的非法文件名。
+	恶意攻击者有可能会上传形如“../../file.txt”的文件，使得该文件有可能会存储在服务器指定的存储根目录外，造成未知的、及其难以排查的错误。因此我们会仔细检查文件名，拒绝所有包含路径分隔符的非法文件名。同时我们再实际存储的时候会随机生成一个随机的字符串作为文件名（文件标识符），进一步降低出现漏洞的可能性。
 	
 	\item \textbf{恶意程序注入}
 	
@@ -135,4 +135,6 @@ public static boolean isValidEmail(String email) {
 	\label{fig:stacktrace}
 \end{figure}
 
+\section{密钥的安全分析}\label{sec:keyS}
 
+\section{存储哈希过后的密码}\label{sec:hashpassword}
