@@ -1,4 +1,4 @@
-% Chapter x
+% Chapter 5
 
 \chapter{安全性设计}
 
@@ -135,6 +135,75 @@ public static boolean isValidEmail(String email) {
 	\label{fig:stacktrace}
 \end{figure}
 
+\section{存储哈希过后的密码}\label{sec:hashpassword}
+
+为了让用户能够登陆我们的系统，我们势必需要在后台数据库中存储下用户的密码信息，取决于存储的方案，用户密码的安全性会有很大的区别。
+
+如果直接明文存储用户的密码信息，一旦服务器端的数据泄露，用户所有的密码信息都会造成不可挽回的全面泄露，这样的安全性是不可接受的。
+
+一个可行的改进方案是存储密码的散列哈希数值，而非密码明文本身。由于散列哈希函数是单向的、不可逆的，因此即便服务器端的数据库遭到了整体泄露，恶意攻击者仍然不能从密码的哈希散列值反推出密码本身，显著地提高了数据库的安全性。
+
+但这样的措施仍然留给了恶意攻击者进行离线攻击的空间。因为日常生活中用户使用的密码往往强度不高，并且有大量的密码是常见的、会被用户重复在不同平台使用的。所以恶意攻击者可以实现搜集这样的已知密码组合，构成密码字典。然后恶意攻击者事先计算出密码字典中密码的哈希散列值，然后在攻破数据库后就仅仅需要进行比对即可得知用户的原始密码明文。
+
+为了阻止恶意攻击者进行离线攻击，一个可行的改进方案是加入盐（salt），即用户的密码会和一组被称为盐的随机数据叠加在一起然后进行哈希，盐会直接明文存储在数据库中。由于哈希函数设计的原则——输入的任何细微变化都会导致输出产生近似于随机的巨大变化——恶意攻击者必须在攻破数据库后在线重新计算其所拥有的密码字典中的哈希散列值。进而阻止一切离线字典攻击的可能。
+
+同时，虽然我们无法从根源上阻止恶意攻击者进行在线攻击的可能性，但是我们可以增加其在线攻击的困难程度，从而间接进一步提高安全性。一个可行的做法是使用更慢的哈希算法，假设我们使用了比一般哈希算法慢1000倍的安全哈希算法。一个相同的恶意攻击者就需要花费之前1000倍的时间才能完成同样的一次在线字典攻击。
+
+\begin{minted}
+[
+	frame=lines,
+	framesep=2mm,
+	baselinestretch=1.2,
+	bgcolor=lightgray,
+	fontsize=\footnotesize,
+	linenos
+]{java}
+
+public static byte[] getHashedPassword(String password, byte[] salt) {
+        byte[] hashedPassword = null;
+        try { // PBKDF2
+                KeySpec spec = new PBEKeySpec(
+                        password.toCharArray(), salt, 
+                        PBKDF2_ITERATION_COUNT, PBKDF2_KEY_SIZE);
+                SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+                hashedPassword = factory.generateSecret(spec).getEncoded();
+        } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+                e.printStackTrace();
+        }
+        return hashedPassword;
+}
+
+\end{minted}
+
+因此我们选择将用户的密码以及随机生成盐通过PBKDF2算法进行哈希加密，然后存储于数据库中。
+代码如上述代码片段所示。
+作为PBKDF2的优点之一，它还可以通过调节循环哈希次数的方式调节算法的强度。
+也就是说即便未来出现了计算性能1000倍于当前计算机的超级计算机，我们也仅需将重复次数增大1000倍即可获得相同的算法强度。
+上述代码第6行的PBKDF2\_ITERATION\_COUNT参数就是用于调节充数次数的参数，现在我们将这个参数设定为65536，即$2^{16}$。
+
 \section{密钥的安全分析}\label{sec:keyS}
 
-\section{存储哈希过后的密码}\label{sec:hashpassword}
+\subsection{对称加密分析}
+
+我们通过对称加密算法对密钥、文件等数据进行加密。它的优点是安全性高，加密速度快等。一个典型的加密过程代码如下所示，首先在第
+
+\begin{minted}
+[
+	frame=lines,
+	framesep=2mm,
+	baselinestretch=1.2,
+	bgcolor=lightgray,
+	fontsize=\footnotesize,
+	linenos
+]{java}
+
+byte[] iv = new byte[IV_SIZE];
+SecureRandom random = new SecureRandom(); 
+random.nextBytes(iv); // generate iv randomly
+IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
+Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+cipher.init(mode, key, ivParameterSpec);
+byte[] encryptedData = cipher.doFinal(data);
+
+\end{minted}
+
