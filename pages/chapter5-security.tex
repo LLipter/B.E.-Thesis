@@ -26,7 +26,7 @@
 
 \section{校验用户输入}
 
-任何由用户提交给服务器端的信息都有可能成为恶意攻击者的突破口，忽视或不完善的校验检查往往会让恶意攻击者有机可乘。
+任何由用户提交给服务器端的信息都有可能成为恶意攻击者的突破口，忽视或不完善的校验检查往往会让恶意攻击者有机可乘。我们对所有用户输入都做了严格的校验检查，并且是前端和后端的双重检查。
 
 \subsection{注册表单校验规则}\label{sec:registerV}
 
@@ -185,7 +185,7 @@ public static byte[] getHashedPassword(String password, byte[] salt) {
 
 \subsection{对称加密分析}
 
-我们通过对称加密算法对密钥、文件等数据进行加密。它的优点是安全性高，加密速度快等。一个典型的加密过程代码如下所示，首先在第
+我们通过对称加密算法对密钥、文件等数据进行加密。它的优点是安全性高，加密速度快等。一个典型的加密过程代码如下所示，首先在第1-4行生成了随机的IV，为了确保安全，我们每次都会随机生成IV，绝不会重用IV。在第5行，我们创建了Cipher对象，这里我们使用的是AES-CBC加密模式，并且用PKCS5Padding的方式进行填充。随后在第7行完成了对称加密的过程。
 
 \begin{minted}
 [
@@ -207,3 +207,49 @@ byte[] encryptedData = cipher.doFinal(data);
 
 \end{minted}
 
+\subsection{多级密钥加密结构}
+
+为了确保数据的安全性，需要加密的文件、密钥等敏感信息都不会明文存储在数据库中，它们都会首先被正确的加密。图\ref{fig:encrypt}展示了我们的多层加密结构。
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=0.8\textwidth]
+	{figures/encrypt.png}\\
+	\caption{多级加密结构}
+	\label{fig:encrypt}
+\end{figure}
+
+位于最上端的是整个系统的主密钥，主密钥是在系统初始化的时候随机生成的，并且仅存在于内存当中。
+
+每个用户在创建账户的时候，系统都会为其随机生成一个用户主密钥，这是第二级密钥。用户主密钥将被主密钥加密后存储于数据库中。
+
+同时每个用户拥有自己的DSA公钥私钥对，RSA公钥私钥对和一个加密密钥。DSA公钥私钥对和RSA公钥私钥对用于对文件生成数字签名、验证数字签名。加密密钥用于加密用户指定的需要加密的文件。DSA公钥和RSA公钥不会被加密，明文存储于数据库中。DSA私钥，RSA私钥和加密密钥会被用户主密钥加密后，密文存储于数据库中。
+
+上述所有提到的密钥都是由安全的生成器随机生成的，我们保证不会重复利用密钥。
+
+\section{数字签名}
+
+我们提供用DSA或者RSA算法这两种选择用于生成数字签名，一段典型的生成签名代码示例如下所示。
+
+\begin{minted}
+[
+	frame=lines,
+	framesep=2mm,
+	baselinestretch=1.2,
+	bgcolor=lightgray,
+	fontsize=\footnotesize,
+	linenos
+]{java}
+
+Signature signature = Signature.getInstance("SHA256WithDSA"); 
+//Signature signature = Signature.getInstance("SHA256withRSA");
+SecureRandom secureRandom = new SecureRandom();
+signature.initSign(privateKey, secureRandom);
+signature.update(data);
+digitalSignature = signature.sign();
+
+\end{minted}
+
+第1-2行我们选择了恰当的算法，SHA256WithDSA代表先用SHA256哈希散列算法计算文件的哈希数值，然后对哈希数值用DSA算法进行签名。SHA256withRSA代表先用SHA256哈希散列算法计算文件的哈希数值，然后对哈希数值用RSA算法进行签名。
+
+由于DSA、RSA生成的签名长度与输入数据长度有关，这样做的好处是保证我们生成的签名长度固定，同时避免对大文件进行数字签名时消耗太长的时间。

@@ -12,6 +12,7 @@
 发送电子邮件的相关模块会调用JavaMail\cite{javamail}库中的相关函数。
 Gradle\cite{gradle}将负责完成项目的构建、依赖关系的管理。
 通过Hibernate\cite{hibernate}完成了Java对象到数据库表格的映射，并最终存储于H2\cite{h2}内存数据库中。
+在开发的过程中，我们还用到了Postman\cite{postman}发送各类请求，测试程序表现。
 
 
 \section{Spring Boot简介}
@@ -69,9 +70,9 @@ Hibernate直接提供相关支持，底层驱动可以随意切换数据库，�
 
 H2数据库是一个开源的关系型数据库。H2是一个嵌入式数据库引擎，采用java语言编写，不受平台的限制，同时支持网络版和嵌入式版本，有比较好的兼容性，支持相当标准的sql标准，支持集群。它提供了JDBC、ODBC访问接口，提供了非常友好的基于web的数据库管理界面。
 
+\section{Postman简介}
 
-
-
+Postman是一款用于辅助开发web应用程序的平台，他可以根据用户的需求发送各种类型的HTTP请求，并将服务器给出的相应展示给用户，能够极大的简化测试的复杂度，加快开发进程。
 
 
 
