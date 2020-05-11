@@ -43,6 +43,11 @@ security.require-ssl=true
 
 \end{minted}
 
+\vspace{-3ex}
+\begin{algorithm}[H]
+  \caption{HTTPS配置}
+\end{algorithm}
+
 \section{加密层次结构的改进}
 
 在我们现在的加密模式中，用户的主密钥还是存储在我们的服务器中的。在这种模式下，一旦我们程序的主密钥因为某种原因意外泄露了，恶意攻击者便掌握了任何用户的任何信息，恶意攻击者便可以解密任何用户加密的任何文件，并伪造任何用户的数字签名。

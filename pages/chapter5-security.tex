@@ -24,6 +24,11 @@
 
 \end{minted}
 
+\vspace{-3ex}
+\begin{algorithm}[H]
+  \caption{Thymeleaf模板}
+\end{algorithm}
+
 \section{校验用户输入}
 
 任何由用户提交给服务器端的信息都有可能成为恶意攻击者的突破口，忽视或不完善的校验检查往往会让恶意攻击者有机可乘。我们对所有用户输入都做了严格的校验检查，并且是前端和后端的双重检查。
@@ -64,6 +69,11 @@ public static boolean isValidEmail(String email) {
 }
 
 \end{minted}
+
+\vspace{-3ex}
+\begin{algorithm}[H]
+  \caption{验证电子邮箱地址}
+\end{algorithm}
 	
 	\item \textbf{重复密码校验规则}
 	
@@ -175,6 +185,11 @@ public static byte[] getHashedPassword(String password, byte[] salt) {
 
 \end{minted}
 
+\vspace{-3ex}
+\begin{algorithm}[H]
+  \caption{哈希密码}
+\end{algorithm}
+
 因此我们选择将用户的密码以及随机生成盐通过PBKDF2算法进行哈希加密，然后存储于数据库中。
 代码如上述代码片段所示。
 作为PBKDF2的优点之一，它还可以通过调节循环哈希次数的方式调节算法的强度。
@@ -206,6 +221,11 @@ cipher.init(mode, key, ivParameterSpec);
 byte[] encryptedData = cipher.doFinal(data);
 
 \end{minted}
+
+\vspace{-3ex}
+\begin{algorithm}[H]
+  \caption{对称加密}
+\end{algorithm}
 
 \subsection{多级密钥加密结构}
 
@@ -249,6 +269,11 @@ signature.update(data);
 digitalSignature = signature.sign();
 
 \end{minted}
+
+\vspace{-3ex}
+\begin{algorithm}[H]
+  \caption{数字签名}
+\end{algorithm}
 
 第1-2行我们选择了恰当的算法，SHA256WithDSA代表先用SHA256哈希散列算法计算文件的哈希数值，然后对哈希数值用DSA算法进行签名。SHA256withRSA代表先用SHA256哈希散列算法计算文件的哈希数值，然后对哈希数值用RSA算法进行签名。
 

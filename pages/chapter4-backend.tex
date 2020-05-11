@@ -86,6 +86,11 @@ Session session = Session.getInstance(props,
 
 \end{minted}
 
+\vspace{-3ex}
+\begin{algorithm}[H]
+  \caption{发送电子邮件}
+\end{algorithm}
+
 这之后只需要如下代码片段所示，将邮件的收件人地址、主体、正文等信息设置妥当后，就可以执行发送的命令，送出这份电子邮件。我们所选择的SMTP服务器在收到这封电子邮件后，将会尝试将它推送给接收用户所属的SMTP服务器。在推送成功后，接收用户便可以从所属的SMTP服务器中拉取、查看这封电子邮件。
 
 \begin{minted}
@@ -107,6 +112,11 @@ Transport.send(message);
 
 \end{minted}
 
+\vspace{-3ex}
+\begin{algorithm}[H]
+  \caption{发送电子邮件}
+\end{algorithm}
+
 发送电子邮件因为涉及网络IO交互，所以相比于其他操作会产生巨大的延迟。为了提高响应速度，让用户拥有更好的使用体验，我们利用Spring Boot的@Async关键词对本模块做了一层封装修饰。让发送方式从同步阻塞变成异步非阻塞，增加效率，显著减少了用户需要等待的时间。但这样做有利有弊，缺点是即使服务器端发生错误（如500服务器内部错误），导致电子邮件发送失败，用户也无法得到相应的错误提示，用户会错以为我们已经正确的发送了电子邮件。
 
 \section{用户Session的维护}
@@ -123,6 +133,7 @@ Controller作为一个MVC框架的组成部分在网站的整体响应过程中�
 
 \begin{table}[ht]
 \centering
+\caption{Controller类}
 \begin{tabular}{>{\bfseries}lp{9cm}}
 \toprule
 SessionController & 
@@ -162,7 +173,6 @@ SigdictErrorController &
 负责处理与错误页面相关的请求。\\
 \bottomrule
 \end{tabular}
-\caption{Controller类}
 \label{tab:controller}
 \end{table}
 
@@ -201,6 +211,11 @@ public String getMainPage(Model model,
 }
 
 \end{minted}
+
+\vspace{-3ex}
+\begin{algorithm}[H]
+  \caption{Main Controller}
+\end{algorithm}
 
 \section{数据库设计}
 
@@ -275,6 +290,11 @@ public class Session {
 
 \end{minted}
 
+\vspace{-3ex}
+\begin{algorithm}[H]
+  \caption{Session.java}
+\end{algorithm}
+
 下面所示代码是repository/SessionRepository.java中的部分片段。
 
 在Controller中，我们将通过操作SessionRepository来获取某个具体的Session对象，这里我们定义了findBySessionId方法，使得我们可以通过sessionID查找相应的Session对象。而Controller中的repository对象则用@Autowired装饰器修饰，Spring Boot框架将会在运行时自动绑定一个repository添加进去。
@@ -295,3 +315,7 @@ public interface SessionRepository extends CrudRepository<Session, Integer> {
 
 \end{minted}
 
+\vspace{-3ex}
+\begin{algorithm}[H]
+  \caption{SessionRepository.java}
+\end{algorithm}
